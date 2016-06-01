@@ -11,23 +11,25 @@ namespace web { namespace http {
 namespace listener = experimental::listener;
 }}
 
-
 int main()
 {
 	const size_t WINDOW_WIDTH{1280};
 	const size_t WINDOW_HEIGHT{720};
-	const auto WIN_RECT = sf::IntRect{0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
+	const size_t FONT_SIZE{100};
 
-	const string defImagePath{"image2.png"};
+	const string defImagePath{"media/image2.png"};
 
 	boost::lockfree::queue<SplashScreen::Message> queue{100};
 
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Splashscreen");
-	sf::RectangleShape shape(sf::Vector2f{WINDOW_WIDTH, WINDOW_HEIGHT});
-	sf::Texture texture;
+	window.setPosition(sf::Vector2i{1280,0});
 
-	texture.loadFromFile(defImagePath, WIN_RECT);
-	sf::Sprite image{texture};
+	sf::RectangleShape shape(sf::Vector2f{WINDOW_WIDTH, WINDOW_HEIGHT});
+	sf::Sprite image{};
+	sf::Font font;
+	font.loadFromFile("media/font_rev.ttf");
+	sf::Text text{sf::String("ciao"), font, FONT_SIZE};
+	text.setPosition(sf::Vector2f{0, WINDOW_HEIGHT / 2});
 
 	shape.setFillColor(sf::Color::Green);
 
@@ -51,6 +53,7 @@ int main()
 
 	splashscreen.open().wait();
 
+	sf::Texture texture;
 	sf::Texture::bind(&texture);
 
 	while (window.isOpen())
@@ -64,9 +67,12 @@ int main()
 
 			if (message.isImagePathValid)
 			{
-				texture.loadFromFile(string{begin(message.imagePath), end(message.imagePath)}, WIN_RECT);
+				texture.loadFromFile(string{begin(message.imagePath), end(message.imagePath)});
 				image = sf::Sprite{texture};
 			}
+
+			if (message.isMessageValid)
+				text.setString(sf::String(string{begin(message.message), end(message.message)}));
 		}
 
 		sf::Event event;
@@ -82,6 +88,8 @@ int main()
 		window.clear();
 		window.draw(shape);
 		window.draw(image);
+		window.draw(text);
+
 		window.display();
 	}
 
