@@ -7,7 +7,9 @@ linux {
     LIBS += -lcrypto -lssl -lboost_system -lcpprest -lpthread -lsfml-graphics -lsfml-window -lsfml-system
 }
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    splashscreenmessage.cpp
 
 HEADERS += \
-    splashscreenmessage.h
+    splashscreenmessage.h \
+    colorconverter.h
