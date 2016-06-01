@@ -27,10 +27,12 @@ Message Parser::parse(const string& messageToParse)
 Message Parser::createMessage()
 {
 	Message msg;
+	msg.show = true;
 	msg.imagePath.fill('\0');
 	msg.message.fill('\0');
 	msg.color = 0;
 
+	msg.isShowValid = false;
 	msg.isImagePathValid = false;
 	msg.isMessageValid = false;
 	msg.isColorValid = false;
@@ -50,9 +52,12 @@ void SplashScreen::Parser::parseField(const std::string& row, Message& msg)
 
 void Parser::assignField(const string& field, const string value, Message& msg)
 {
-	static const std::string IMAGE{"image"};
-	static const std::string COLOR{"color"};
-	static const std::string MESSAGE{"message"};
+	using namespace std::literals::string_literals;
+
+	static const auto IMAGE = "image"s;
+	static const auto COLOR = "color"s;
+	static const auto MESSAGE = "message"s;
+	static const auto SHOW = "show"s;
 
 	if (field == IMAGE)
 	{
@@ -71,6 +76,12 @@ void Parser::assignField(const string& field, const string value, Message& msg)
 		msg.color = toIntColor(value);
 		msg.isColorValid = true;
 	}
+
+	if (field == SHOW)
+	{
+		msg.show = (value == "true"s ? true : false);
+		msg.isShowValid = true;
+	}
 }
 
 std::ostream& operator << (std::ostream& os, const SplashScreen::Message& msg)
@@ -86,6 +97,10 @@ std::ostream& operator << (std::ostream& os, const SplashScreen::Message& msg)
 		   << std::hex << std::setfill('0') << std::setw(8)
 		   << msg.color
 		   << std::setfill(' ') << std::dec << '\n';
+
+	if (msg.isShowValid)
+		os << "show: " << boolalpha << msg.show << '\n';
+
 	return os;
 }
 

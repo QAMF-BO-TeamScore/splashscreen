@@ -4,6 +4,7 @@
 #include <cpprest/http_listener.h>
 #include <boost/lockfree/queue.hpp>
 #include <iostream>
+#include <csignal>
 
 using namespace std;
 
@@ -11,25 +12,39 @@ namespace web { namespace http {
 namespace listener = experimental::listener;
 }}
 
+
+std::atomic<bool> gExit{false};
+
+void InterruptHandler(int)
+{
+	gExit = true;
+}
+
 int main()
 {
+	signal (SIGINT, InterruptHandler);
+	signal (SIGTERM, InterruptHandler);
+
 	const size_t WINDOW_WIDTH{1280};
 	const size_t WINDOW_HEIGHT{720};
 	const size_t FONT_SIZE{100};
+	const sf::Vector2f TEXT_POS{0, WINDOW_HEIGHT / 2};
+	const sf::Vector2i WIN_POS{WINDOW_WIDTH, 0};
+	const sf::Vector2u WIN_SIZE{WINDOW_WIDTH, WINDOW_HEIGHT};
 
-	const string defImagePath{"media/image2.png"};
+	const string defImagePath{"/home/ale/splashscreen/media/image2.png"};
 
 	boost::lockfree::queue<SplashScreen::Message> queue{100};
 
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Splashscreen");
-	window.setPosition(sf::Vector2i{1280,0});
+	window.setPosition(WIN_POS);
 
 	sf::RectangleShape shape(sf::Vector2f{WINDOW_WIDTH, WINDOW_HEIGHT});
 	sf::Sprite image{};
 	sf::Font font;
-	font.loadFromFile("media/font_rev.ttf");
+	font.loadFromFile("/home/ale/splashscreen/media/font_rev.ttf");
 	sf::Text text{sf::String("ciao"), font, FONT_SIZE};
-	text.setPosition(sf::Vector2f{0, WINDOW_HEIGHT / 2});
+	text.setPosition(TEXT_POS);
 
 	shape.setFillColor(sf::Color::Green);
 
@@ -56,7 +71,7 @@ int main()
 	sf::Texture texture;
 	sf::Texture::bind(&texture);
 
-	while (window.isOpen())
+	while (window.isOpen() && !gExit)
 	{
 		SplashScreen::Message message;
 
@@ -73,6 +88,13 @@ int main()
 
 			if (message.isMessageValid)
 				text.setString(sf::String(string{begin(message.message), end(message.message)}));
+
+			if (message.isShowValid)
+			{
+				window.setVisible(message.show);
+				window.setPosition(WIN_POS);
+				window.setSize(WIN_SIZE);
+			}
 		}
 
 		sf::Event event;

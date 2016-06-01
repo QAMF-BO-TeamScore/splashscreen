@@ -7,10 +7,12 @@
 namespace SplashScreen {
 
 struct Message {
+	bool isShowValid;
 	bool isImagePathValid;
 	bool isMessageValid;
 	bool isColorValid;
 
+	bool show;
 	std::array<char, 512> imagePath;
 	std::array<char, 512> message;
 	std::uint32_t color;
