@@ -75,12 +75,17 @@ void Parser::assignField(const string& field, const string value, Message& msg)
 
 std::ostream& operator << (std::ostream& os, const SplashScreen::Message& msg)
 {
-	os << "image path: " << msg.imagePath.data() << '\n'
-	   << "message: " << msg.message.data() << '\n'
-	   << "color: "
-	   << std::hex << std::setfill('0') << std::setw(8)
-	   << msg.color
-	   << std::setfill(' ') << std::dec << '\n';
+	if (msg.isImagePathValid)
+		os << "image path: " << msg.imagePath.data() << '\n';
+
+	if (msg.isMessageValid)
+		os << "message: " << msg.message.data() << '\n';
+
+	if (msg.isColorValid)
+		os << "color: "
+		   << std::hex << std::setfill('0') << std::setw(8)
+		   << msg.color
+		   << std::setfill(' ') << std::dec << '\n';
 	return os;
 }
 
